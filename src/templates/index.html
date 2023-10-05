@@ -2,11 +2,136 @@
 <html>
 
 <head>
-    <title>App</title>
+    <meta charset="UTF-8">
+    <title>Todo Dashboard</title>
+    <style>
+        /* Add your CSS styles here */
+    </style>
 </head>
 
 <body>
-    <h1>Welcome to the App</h1>
+    <h1>Todo Dashboard</h1>
+
+    <!-- Form to create a new todo -->
+    <form id="create-todo-form">
+        <label for="todo-name">Name:</label>
+        <input type="text" id="todo-name" name="name" required value="test">
+        <label for="todo-description">Description:</label>
+        <textarea id="todo-description" name="description">test</textarea>
+        <label for="todo-due-date">Due Date:</label>
+        <input type="date" id="todo-due-date" name="dueDate" value="2023-10-05">
+        <button type="submit">Create Todo</button>
+    </form>
+
+    <!-- Search bar to search for todos -->
+    <input type="text" id="search-bar" placeholder="Search...">
+
+    <!-- Table to display todos -->
+    <table id="todo-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Todo items will be added dynamically using JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+        const createTodoForm = document.getElementById('create-todo-form');
+        const todoTable = document.getElementById('todo-table');
+        const searchBar = document.getElementById('search-bar');
+
+        // get host
+        const host = window.location.host;
+        // get http or https
+        const protocol = window.location.protocol;
+
+        // Add event listener to create todo form
+        createTodoForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(createTodoForm);
+            const name = formData.get('name');
+            const description = formData.get('description');
+            const dueDate = formData.get('dueDate');
+
+            // create new todo
+            fetch(`${protocol}/addTask`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    name,
+                    description,
+                    dueDate
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const task = data.task;
+                    // add new todo to table
+                    const newTodo = `
+                        <tr>
+                            <td>${task.name}</td>
+                            <td>${task.description}</td>
+                            <td>${task.dueDate}</td>
+                            <td>
+                                <button class="delete-todo" data-id="${task.name}">Delete</button>
+                                <button class="edit-todo" data-id="${task.name}">Edit</button>
+                            </td>
+                        </tr>
+                    `;
+                    todoTable.insertAdjacentHTML('beforeend', newTodo);
+                    createTodoForm.reset();
+                })
+                .catch(error => console.log(error));
+        });
+
+        // Add event listener for delete todo form
+        todoTable.addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-todo')) {
+                const todoName = event.target.dataset.id;
+                fetch(`${protocol}/deleteTask/${todoName}`, {
+                    method: 'DELETE'
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // remove todo from table
+                        event.target.parentNode.parentNode.remove();
+                    })
+                    .catch(error => console.log(error));
+            }
+        });
+
+        // Read all todos from database
+        fetch(`${protocol}/getTasks`)
+            .then(response => response.json())
+            .then(data => {
+                const tasks = data.tasks;
+                // add todos to table
+                tasks.forEach(task => {
+                    const newTodo = `
+                        <tr>
+                            <td>${task.name}</td>
+                            <td>${task.description}</td>
+                            <td>${task.dueDate}</td>
+                            <td>
+                                <button class="delete-todo" data-id="${task.name}">Delete</button>
+                                <button class="edit-todo" data-id="${task.name}">Edit</button>
+                            </td>
+                        </tr>
+                    `;
+                    todoTable.insertAdjacentHTML('beforeend', newTodo);
+                });
+            })
+            .catch(error => console.log(error));
+
+    </script>
 </body>
 
 </html>
