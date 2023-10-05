@@ -1,3 +1,5 @@
+[![main branch workflow (on merge)](https://github.com/autobotsmlops/CA4/actions/workflows/main.yaml/badge.svg)](https://github.com/autobotsmlops/CA4/actions/workflows/main.yaml)
+
 # MLOPS CA4
 
 ## setup
