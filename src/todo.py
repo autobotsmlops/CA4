@@ -6,47 +6,58 @@ class Tasks:
         self.status = status
         self.dueDate = dueDate
 
-
 class Todo:
-    def __init__(self):
-        self.index = 0
-        self.tasks = []
+    def __init__(self, db):
+        self.db = db
 
     def addTask(self, name, description, dueDate):
-        self.index = self.index + 1
-        task = Tasks(self.index, name, description, dueDate)
-        self.tasks.append(task)
-        return task
+        cursor = self.db.cursor()
+        status = False
+        cursor.execute("INSERT INTO tasks (name, description, status, dueDate) VALUES (%s, %s, %s, %s)",
+               (name, description, status, dueDate))
+
+        self.db.commit()
+        return Tasks(cursor.lastrowid, name, description, dueDate)
 
     def getTasks(self):
-        return self.tasks
-    
+        cursor = self.db.cursor()
+        cursor.execute("SELECT * FROM tasks")
+        rows = cursor.fetchall()
+        tasks = []
+        for row in rows:
+            tasks.append(Tasks(row[0], row[1], row[2], row[4], row[3]))
+        return tasks
+
     def getTask(self, name):
-        for task in self.tasks:
-            if task.name == name:
-                return task
+        cursor = self.db.cursor()
+        cursor.execute("SELECT * FROM tasks WHERE name=%s", (name,))
+        row = cursor.fetchone()
+        if row:
+            return Tasks(row[0], row[1], row[2], row[4], row[3])
         return None
-    
+
     def deleteTask(self, name):
-        task = self.getTask(name)
-        if task:
-            self.tasks.remove(task)
+        cursor = self.db.cursor()
+        cursor.execute("DELETE FROM tasks WHERE name=%s", (name,))
+        self.db.commit()
+        if cursor.rowcount > 0:
             return True
         return False
-    
+
     def updateTask(self, name, description, status, dueDate):
-        task = self.getTask(name)
-        if task:
-            task.description = description
-            task.status = status
-            task.dueDate = dueDate
-            return task
+        cursor = self.db.cursor()
+        cursor.execute("UPDATE tasks SET description=%s, status=%s, dueDate=%s WHERE name=%s",
+                       (description, status, dueDate, name))
+        self.db.commit()
+        if cursor.rowcount > 0:
+            return self.getTask(name)
         return None
-    
+
     def searchTask(self, name):
+        cursor = self.db.cursor()
+        cursor.execute("SELECT * FROM tasks WHERE name LIKE %s", ('%' + name + '%',))
+        rows = cursor.fetchall()
         tasks = []
-        for task in self.tasks:
-            if name in task.name:
-                tasks.append(task)
+        for row in rows:
+            tasks.append(Tasks(row[0], row[1], row[2], row[4], row[3]))
         return tasks
-    

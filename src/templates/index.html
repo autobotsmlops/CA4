@@ -1,137 +1,209 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Todo Dashboard</title>
+    <!-- Include Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
     <style>
-        /* Add your CSS styles here */
+      /* Add your CSS styles here */
     </style>
-</head>
+  </head>
 
-<body>
-    <h1>Todo Dashboard</h1>
+  <body>
+    <div class="container mt-4">
+      <h1 class="mb-4">Todo Dashboard</h1>
 
-    <!-- Form to create a new todo -->
-    <form id="create-todo-form">
-        <label for="todo-name">Name:</label>
-        <input type="text" id="todo-name" name="name" required value="test">
-        <label for="todo-description">Description:</label>
-        <textarea id="todo-description" name="description">test</textarea>
-        <label for="todo-due-date">Due Date:</label>
-        <input type="date" id="todo-due-date" name="dueDate" value="2023-10-05">
-        <button type="submit">Create Todo</button>
-    </form>
+      <!-- Form to create a new todo -->
+      <form id="create-todo-form">
+        <div class="form-group">
+          <label for="todo-name">Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="todo-name"
+            name="name"
+            required
+            value="test"
+          />
+        </div>
+        <div class="form-group">
+          <label for="todo-description">Description:</label>
+          <textarea
+            class="form-control"
+            id="todo-description"
+            name="description"
+          >
+test</textarea
+          >
+        </div>
+        <div class="form-group">
+          <label for="todo-due-date">Due Date:</label>
+          <input
+            type="date"
+            class="form-control"
+            id="todo-due-date"
+            name="dueDate"
+            value="2023-10-05"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Create Todo</button>
+      </form>
 
-    <!-- Search bar to search for todos -->
-    <input type="text" id="search-bar" placeholder="Search...">
+      <!-- Search bar to search for todos -->
+      <div class="form-group mt-4">
+        <input
+          type="text"
+          class="form-control"
+          id="search-bar"
+          placeholder="Search..."
+        />
+      </div>
+      <button id="search-button" class="btn btn-secondary">Search</button>
 
-    <!-- Table to display todos -->
-    <table id="todo-table">
+      <!-- Table to display todos -->
+      <table class="table mt-4" id="todo-table">
         <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Due Date</th>
-                <th>Actions</th>
-            </tr>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+          </tr>
         </thead>
         <tbody>
-            <!-- Todo items will be added dynamically using JavaScript -->
+          <!-- Todo items will be added dynamically using JavaScript -->
         </tbody>
-    </table>
+      </table>
+    </div>
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Your JavaScript code here -->
 
     <script>
-        const createTodoForm = document.getElementById('create-todo-form');
-        const todoTable = document.getElementById('todo-table');
-        const searchBar = document.getElementById('search-bar');
+      const createTodoForm = document.getElementById("create-todo-form");
+      const todoTable = document.getElementById("todo-table");
+      const searchBar = document.getElementById("search-bar");
 
-        // get host
-        const host = window.location.host;
-        // get http or https
-        const protocol = window.location.protocol;
+      const host = window.location.host;
+      const protocol = window.location.protocol;
 
-        // Add event listener to create todo form
-        createTodoForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const formData = new FormData(createTodoForm);
-            const name = formData.get('name');
-            const description = formData.get('description');
-            const dueDate = formData.get('dueDate');
-
-            // create new todo
-            fetch(`${protocol}/addTask`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    name,
-                    description,
-                    dueDate
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    const task = data.task;
-                    // add new todo to table
-                    const newTodo = `
-                        <tr>
-                            <td>${task.name}</td>
-                            <td>${task.description}</td>
-                            <td>${task.dueDate}</td>
-                            <td>
-                                <button class="delete-todo" data-id="${task.name}">Delete</button>
-                                <button class="edit-todo" data-id="${task.name}">Edit</button>
-                            </td>
-                        </tr>
-                    `;
-                    todoTable.insertAdjacentHTML('beforeend', newTodo);
-                    createTodoForm.reset();
-                })
-                .catch(error => console.log(error));
-        });
-
-        // Add event listener for delete todo form
-        todoTable.addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-todo')) {
-                const todoName = event.target.dataset.id;
-                fetch(`${protocol}/deleteTask/${todoName}`, {
-                    method: 'DELETE'
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        // remove todo from table
-                        event.target.parentNode.parentNode.remove();
-                    })
-                    .catch(error => console.log(error));
-            }
-        });
-
-        // Read all todos from database
+      const fetchAndDisplayTodos = () => {
         fetch(`${protocol}/getTasks`)
-            .then(response => response.json())
-            .then(data => {
-                const tasks = data.tasks;
-                // add todos to table
-                tasks.forEach(task => {
-                    const newTodo = `
+          .then((response) => response.json())
+          .then((data) => {
+            const tasks = data.tasks;
+            todoTable.innerHTML = `
+                    <thead>
                         <tr>
-                            <td>${task.name}</td>
-                            <td>${task.description}</td>
-                            <td>${task.dueDate}</td>
-                            <td>
-                                <button class="delete-todo" data-id="${task.name}">Delete</button>
-                                <button class="edit-todo" data-id="${task.name}">Edit</button>
-                            </td>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
                         </tr>
-                    `;
-                    todoTable.insertAdjacentHTML('beforeend', newTodo);
-                });
-            })
-            .catch(error => console.log(error));
+                    </thead>
+                    <tbody>
+                        ${tasks
+                          .map(
+                            (task) => `
+                            <tr>
+                                <td>${task.name}</td>
+                                <td>${task.description}</td>
+                                <td>${task.dueDate}</td>
+                                <td>
+                                    <button class="delete-todo" data-id="${task.name}">Delete</button>
+                                    <button class="edit-todo" data-id="${task.name}">Edit</button>
+                                </td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </tbody>
+                `;
+          })
+          .catch((error) => console.log(error));
+      };
 
+      createTodoForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(createTodoForm);
+        const name = formData.get("name");
+        const description = formData.get("description");
+        const dueDate = formData.get("dueDate");
+
+        fetch(`${protocol}/addTask`, {
+          method: "POST",
+          body: JSON.stringify({ name, description, dueDate }),
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((response) => response.json())
+          .then(() => {
+            createTodoForm.reset();
+            fetchAndDisplayTodos();
+          })
+          .catch((error) => console.log(error));
+      });
+
+      todoTable.addEventListener("click", (event) => {
+        if (event.target.classList.contains("delete-todo")) {
+          const todoName = event.target.dataset.id;
+          fetch(`${protocol}/deleteTask/${todoName}`, { method: "DELETE" })
+            .then((response) => response.json())
+            .then(() => fetchAndDisplayTodos())
+            .catch((error) => console.log(error));
+        }
+      });
+
+      document.getElementById("search-button").addEventListener("click", () => {
+        const name = searchBar.value.trim();
+        if (name === "") {
+          fetchAndDisplayTodos();
+          return;
+        }
+        fetch(`${protocol}/searchTask/${name}`)
+          .then((response) => response.json())
+          .then((data) => {
+            const tasks = data.tasks;
+            todoTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tasks
+                          .map(
+                            (task) => `
+                            <tr>
+                                <td>${task.name}</td>
+                                <td>${task.description}</td>
+                                <td>${task.dueDate}</td>
+                                <td>
+                                    <button class="delete-todo" data-id="${task.name}">Delete</button>
+                                    <button class="edit-todo" data-id="${task.name}">Edit</button>
+                                </td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </tbody>
+                `;
+          })
+          .catch((error) => console.log(error));
+      });
+
+      // Initial fetch and display of todos
+      fetchAndDisplayTodos();
     </script>
-</body>
-
+  </body>
 </html>
