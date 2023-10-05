@@ -1,8 +1,18 @@
-From Python:3.9
-WorkDir / app
-Copy .
-Run pip install - 
-Expose 5000
-CMD [‘Python’,’app.py’]	
+FROM python:3.10
+
+RUN mkdir -p /home/app
+
+COPY . /home/app
+
+EXPOSE 5000
+
+ENV NAME World
+
+WORKDIR /home/app
+
+RUN make install
+
+# Run main.py when the container launches
+CMD ["python", "src/main.py"]
 
 
