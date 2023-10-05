@@ -2,6 +2,17 @@
 version: '3'
 
 services:
+  db:
+    build: 
+      context: ./src/db
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: TODO
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
   web:
     build: .
     ports:
@@ -9,13 +20,3 @@ services:
     environment:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
-    links:
-      - db
-  db:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    ports:
-      - "3306:3306"
-    volumes:
-      - ./src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
