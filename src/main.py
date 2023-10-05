@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template
-# import sqlite3 as sql
 from todo import Todo as _Todo
+
+import mysql.connector
 
 app = Flask(__name__)
 
@@ -47,11 +48,38 @@ def updateTask(name):
 
 @app.route('/searchTask/<name>', methods=['GET'])
 def searchTask(name):
-    tasks = Todo.searchTask(name)
+    if name == '':
+        tasks = Todo.getTasks()
+    else:
+        tasks = Todo.searchTask(name)
     return jsonify({'tasks': [task.__dict__ for task in tasks]})
 
 if __name__ == '__main__':
 
-    Todo = _Todo()
+    
+    # Initialize SQLite database connection
+    db = mysql.connector.connect(
+        host="127.0.0.1",
+        port=3306,
+        user="root",
+        password="root",
+        database="TODO"
+    )
+
+    # with app.app_context():
+    #     cursor = db.cursor()
+    #     cursor.execute('''CREATE TABLE IF NOT EXISTS tasks (
+    #                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    #                     name TEXT NOT NULL,
+    #                     description TEXT,
+    #                     status BOOLEAN,
+    #                     dueDate DATE)''')
+    #     db.commit()
+
+    Todo = _Todo(db)
 
     app.run(host='0.0.0.0', debug=True, port=5000)
+
+    # Close the cursor and the database connection when done
+    Todo.db.cursor.close()
+    Todo.db.close()
