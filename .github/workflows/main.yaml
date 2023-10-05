@@ -5,6 +5,7 @@ name: main branch workflow (on merge)
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch: # Allow manual triggering from GitHub UI
   pull_request:
     branches: [ "main" ]
     types:
@@ -13,7 +14,6 @@ permissions:
   contents: read
 jobs:
   app-build:
-    if: github.event.pull_request.merged == true
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
