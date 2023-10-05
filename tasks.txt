@@ -1,0 +1,5 @@
+Task 1 - Docker Compose File    assigned to (i201770) Zeerak Zubair
+
+Task 2 - Web Server Service     assigned to (i201866) Faraz Razi
+
+Task 3 - Database Service       assigned to (i201893) Ahmed
