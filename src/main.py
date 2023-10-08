@@ -57,24 +57,14 @@ def searchTask(name):
 if __name__ == '__main__':
 
     
-    # Initialize SQLite database connection
+    # Initialize MySQL database connection using the service name
     db = mysql.connector.connect(
-        host="127.0.0.1",
+        host="db",  # Use the service name defined in docker-compose.yaml
         port=3306,
         user="root",
         password="root",
         database="TODO"
     )
-
-    # with app.app_context():
-    #     cursor = db.cursor()
-    #     cursor.execute('''CREATE TABLE IF NOT EXISTS tasks (
-    #                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #                     name TEXT NOT NULL,
-    #                     description TEXT,
-    #                     status BOOLEAN,
-    #                     dueDate DATE)''')
-    #     db.commit()
 
     Todo = _Todo(db)
 
