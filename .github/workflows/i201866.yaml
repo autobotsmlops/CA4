@@ -29,7 +29,7 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Build docker images
-        run: docker-compose build -d
+        run: docker-compose up --build -d
       - name: Lint
         run: |
           make lint
