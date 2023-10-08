@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template
 from todo import Todo as _Todo
 
@@ -6,6 +7,28 @@ import mysql.connector
 app = Flask(__name__)
 
 Todo = None
+
+
+def connect_to_db():
+    if os.environ.get('ENV') is None:
+        os.environ['ENV'] = 'local'
+
+    if os.environ.get('ENV') == 'container':
+        dbHost = os.environ.get('DB_HOST')
+
+    if os.environ.get('ENV') == 'local':
+        dbHost = 'localhost'
+    
+    return mysql.connector.connect(
+        host=dbHost,
+        port=3306,
+        user="root",
+        password="root",
+        database="TODO"
+    )
+
+db = connect_to_db()
+Todo = _Todo(db)
 
 @app.route('/')
 def home():
@@ -25,13 +48,6 @@ def getTasks():
     tasks = Todo.getTasks()
     return jsonify({'tasks': [task.__dict__ for task in tasks]})
 
-@app.route('/getTask/<name>', methods=['GET'])
-def getTask(name):
-    task = Todo.getTask(name)
-    if task:
-        return jsonify({'task': task.__dict__})
-    return jsonify({'task': None})
-
 @app.route('/deleteTask/<name>', methods=['DELETE'])
 def deleteTask(name):
     result = Todo.deleteTask(name)
@@ -44,6 +60,9 @@ def updateTask(name):
     status = data['status']
     dueDate = data['dueDate']
     task = Todo.updateTask(name, description, status, dueDate)
+    if not task:
+        return jsonify({'task': None})
+
     return jsonify({'task': task.__dict__})
 
 @app.route('/searchTask/<name>', methods=['GET'])
@@ -55,18 +74,6 @@ def searchTask(name):
     return jsonify({'tasks': [task.__dict__ for task in tasks]})
 
 if __name__ == '__main__':
-
-    
-    # Initialize MySQL database connection using the service name
-    db = mysql.connector.connect(
-        host="db",  # Use the service name defined in docker-compose.yaml
-        port=3306,
-        user="root",
-        password="root",
-        database="TODO"
-    )
-
-    Todo = _Todo(db)
 
     app.run(host='0.0.0.0', debug=True, port=5000)
 

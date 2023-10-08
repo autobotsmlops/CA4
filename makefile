@@ -10,8 +10,8 @@ lint:
 	@echo "Done."
 
 test:
-	@echo "Testing using pytest..."
-	@pytest src/test.py
+	@echo "Testing using pytest... ignore warnings"
+	@pytest src/test.py -W ignore
 	@echo "Done."
 
 run:
