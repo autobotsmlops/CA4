@@ -45,7 +45,7 @@ class TestApp(unittest.TestCase):
             "status": "completed",
             "dueDate": "2023-11-15"
         }
-        response = self.app.put('/updateTask/Task', data=json.dumps(data), content_type='application/json')
+        response = self.app.put('/updateTask/1', data=json.dumps(data), content_type='application/json')
         print(response.json)
         self.assertEqual(response.status_code, 200)
 
@@ -54,7 +54,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
     
     def test_delete_task_route(self):
-        response = self.app.delete('/deleteTask/Task')
+        response = self.app.delete('/deleteTask/1')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json['result'], True)
         
