@@ -47,3 +47,5 @@ jobs:
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
       - name: Docker Compose
         uses: isbang/compose-action@v1.5.1
+        with:
+          compose-file: ./docker-compose.yaml
