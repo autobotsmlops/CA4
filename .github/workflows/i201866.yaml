@@ -29,14 +29,14 @@ jobs:
         run: |
           pip install -r requirements.txt
       - name: Build docker images
-        run: docker-compose up --build -d
+        run: docker-compose up db --build -d
       - name: Lint
         run: |
           make lint
       - name: Test with pytest
         run: |
           make test
-          
+
   docker-push:
     # if the merge is to the main branch, then push the docker image
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
