@@ -2,7 +2,7 @@ version: '3'
 
 services:
   web:
-    image: autobotsmlops/ca4-web
+    image: autobotsmlops/ca4-web:latest
     build: .
     ports:
       - "5000:5000"
@@ -17,7 +17,7 @@ services:
         condition: service_healthy  # Wait for the 'db' service to be healthy
   
   db:
-    image: autobotsmlops/ca4-db
+    image: autobotsmlops/ca4-db:latest
     build: 
       context: ./src/db
       dockerfile: Dockerfile
