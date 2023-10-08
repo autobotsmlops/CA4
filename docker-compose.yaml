@@ -1,8 +1,20 @@
-#docker_compose.yaml
 version: '3'
 
 services:
+  web:
+    image: autobotsmlops/ca4-web
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy  # Wait for the 'db' service to be healthy
+  
   db:
+    image: autobotsmlops/ca4-db
     build: 
       context: ./src/db
       dockerfile: Dockerfile
@@ -13,10 +25,8 @@ services:
       - "3306:3306"
     volumes:
       - ./src/db/init.sql:/docker-entrypoint-initdb.d/init.sql
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    environment:
-      - FLASK_APP=app.py
-      - FLASK_RUN_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
