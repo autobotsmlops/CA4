@@ -44,8 +44,8 @@ jobs:
 
       - name: Push Docker iamge
         run: |
-          docker tag ca4-web ${{ secrets.DOCKER_USERNAME }}/ca4-web:latest
+          docker tag ca4-web_1 ${{ secrets.DOCKER_USERNAME }}/ca4-web:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/ca4-web:latest
 
-          docker tag ca4-db ${{ secrets.DOCKER_USERNAME }}/ca4-db:latest
+          docker tag ca4-db_2 ${{ secrets.DOCKER_USERNAME }}/ca4-db:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/ca4-db:latest
