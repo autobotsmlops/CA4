@@ -48,18 +48,19 @@ def getTasks():
     tasks = Todo.getTasks()
     return jsonify({'tasks': [task.__dict__ for task in tasks]})
 
-@app.route('/deleteTask/<name>', methods=['DELETE'])
-def deleteTask(name):
-    result = Todo.deleteTask(name)
+@app.route('/deleteTask/<id>', methods=['DELETE'])
+def deleteTask(id):
+    result = Todo.deleteTask(id)
     return jsonify({'result': result})
 
-@app.route('/updateTask/<name>', methods=['PUT'])
-def updateTask(name):
+@app.route('/updateTask/<id>', methods=['PUT'])
+def updateTask(id):
     data = request.get_json()
+    name = data['name']
     description = data['description']
     status = data['status']
     dueDate = data['dueDate']
-    task = Todo.updateTask(name, description, status, dueDate)
+    task = Todo.updateTask(id, name, description, status, dueDate)
     if not task:
         return jsonify({'task': None})
 

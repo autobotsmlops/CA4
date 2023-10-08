@@ -17,66 +17,56 @@
     <div class="container mt-4">
       <h1 class="mb-4">Todo Dashboard</h1>
 
-      <!-- Form to create a new todo -->
-      <form id="create-todo-form">
-        <div class="form-group">
-          <label for="todo-name">Name:</label>
+      <!-- Add Task Section -->
+      <h2 class="mt-4">Add Task</h2>
+      <form id="addTaskForm" class="form-inline">
+        <div class="form-group mr-2">
           <input
             type="text"
+            id="taskName"
             class="form-control"
-            id="todo-name"
-            name="name"
-            required
-            value="test"
+            placeholder="Task Name"
           />
         </div>
-        <div class="form-group">
-          <label for="todo-description">Description:</label>
-          <textarea
+        <div class="form-group mr-2">
+          <input
+            type="text"
+            id="taskDescription"
             class="form-control"
-            id="todo-description"
-            name="description"
-          >
-test</textarea
-          >
+            placeholder="Task Description"
+          />
         </div>
-        <div class="form-group">
-          <label for="todo-due-date">Due Date:</label>
+        <div class="form-group mr-2">
           <input
             type="date"
+            id="dueDate"
             class="form-control"
-            id="todo-due-date"
-            name="dueDate"
-            value="2023-10-05"
+            placeholder="Due Date"
           />
         </div>
-        <button type="submit" class="btn btn-primary">Create Todo</button>
+        <div class="form-check mr-2">
+          <input type="checkbox" id="taskStatus" class="form-check-input" />
+          Completed
+        </div>
+        <button type="submit" class="btn btn-primary">Add</button>
       </form>
 
-      <!-- Search bar to search for todos -->
-      <div class="form-group mt-4">
-        <input
-          type="text"
-          class="form-control"
-          id="search-bar"
-          placeholder="Search..."
-        />
-      </div>
-      <button id="search-button" class="btn btn-secondary">Search</button>
-
-      <!-- Table to display todos -->
-      <table class="table mt-4" id="todo-table">
+      <!-- Task List Section -->
+      <h2 class="mt-4">Tasks</h2>
+      <table id="taskTable" class="table table-striped">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Name</th>
             <th>Description</th>
             <th>Due Date</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Todo items will be added dynamically using JavaScript -->
-        </tbody>
+        <tbody></tbody>
+      </table>
+      
       </table>
     </div>
 
@@ -88,122 +78,148 @@ test</textarea
     <!-- Your JavaScript code here -->
 
     <script>
-      const createTodoForm = document.getElementById("create-todo-form");
-      const todoTable = document.getElementById("todo-table");
-      const searchBar = document.getElementById("search-bar");
-
-      const host = window.location.host;
       const protocol = window.location.protocol;
+      const taskTable = document
+        .getElementById("taskTable")
+        .getElementsByTagName("tbody")[0];
+      const addTaskForm = document.getElementById("addTaskForm");
+      const taskNameInput = document.getElementById("taskName");
+      const taskDescriptionInput = document.getElementById("taskDescription");
+      const dueDateInput = document.getElementById("dueDate");
+      const taskStatusInput = document.getElementById("taskStatus");
+      const newTaskNameInput = document.getElementById("newTaskName");
+      const newTaskDescriptionInput =
+        document.getElementById("newTaskDescription");
+      const newDueDateInput = document.getElementById("newDueDate");
+      const newTaskStatusInput = document.getElementById("newTaskStatus");
+      const addNewTaskButton = document.getElementById("addNewTask");
 
-      const fetchAndDisplayTodos = () => {
+      // Function to fetch tasks and render them in the table
+      function getTasks() {
         fetch(`${protocol}/getTasks`)
           .then((response) => response.json())
           .then((data) => {
-            const tasks = data.tasks;
-            todoTable.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Due Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tasks
-                          .map(
-                            (task) => `
-                            <tr>
-                                <td>${task.name}</td>
-                                <td>${task.description}</td>
-                                <td>${task.dueDate}</td>
-                                <td>
-                                    <button class="delete-todo" data-id="${task.name}">Delete</button>
-                                    <button class="edit-todo" data-id="${task.name}">Edit</button>
-                                </td>
-                            </tr>
-                        `
-                          )
-                          .join("")}
-                    </tbody>
-                `;
-          })
-          .catch((error) => console.log(error));
-      };
+            taskTable.innerHTML = "";
+            data["tasks"].forEach((task) => {
+              const row = createTaskRow(task);
+              taskTable.appendChild(row);
+            });
+          });
+      }
+      getTasks();
 
-      createTodoForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        const formData = new FormData(createTodoForm);
-        const name = formData.get("name");
-        const description = formData.get("description");
-        const dueDate = formData.get("dueDate");
+      // Function to create a task row
+      function createTaskRow(task) {
+        const row = document.createElement("tr");
+        
+        // Format the date to "YYYY-MM-DD"
+        const formattedDate = new Date(task.dueDate).toISOString().split('T')[0];
+
+        row.innerHTML = `
+          <td>${task.id}</td>
+          <td><input type="text" class="form-control taskName" value="${
+            task.name
+          }"></td>
+          <td><input type="text" class="form-control taskDescription" value="${
+            task.description
+          }"></td>
+          <td><input type="date" class="form-control dueDate" value="${
+            formattedDate
+          }"></td>
+          <td><input type="checkbox" class="form-check-input taskStatus" ${
+            task.status ? "checked" : ""
+          }></td>
+          <td>
+              <button class="btn btn-primary updateTask">Update</button>
+              <button class="btn btn-danger deleteTask">Delete</button>
+          </td>
+            `;
+
+        // Add event listeners for update and delete buttons
+        const updateButton = row.querySelector(".updateTask");
+        const deleteButton = row.querySelector(".deleteTask");
+        updateButton.addEventListener("click", () => updateTask(task.id, row));
+        deleteButton.addEventListener("click", () => deleteTask(task.id));
+
+        return row;
+      }
+
+      // Function to add a new task
+      addTaskForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const name = taskNameInput.value;
+        const description = taskDescriptionInput.value;
+        const dueDate = dueDateInput.value;
+        const status = taskStatusInput.checked;
 
         fetch(`${protocol}/addTask`, {
           method: "POST",
-          body: JSON.stringify({ name, description, dueDate }),
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, description, dueDate, status }),
         })
           .then((response) => response.json())
           .then(() => {
-            createTodoForm.reset();
-            fetchAndDisplayTodos();
-          })
-          .catch((error) => console.log(error));
+            getTasks();
+            taskNameInput.value = "";
+            taskDescriptionInput.value = "";
+            dueDateInput.value = "";
+            taskStatusInput.checked = false;
+          });
       });
 
-      todoTable.addEventListener("click", (event) => {
-        if (event.target.classList.contains("delete-todo")) {
-          const todoName = event.target.dataset.id;
-          fetch(`${protocol}/deleteTask/${todoName}`, { method: "DELETE" })
-            .then((response) => response.json())
-            .then(() => fetchAndDisplayTodos())
-            .catch((error) => console.log(error));
-        }
+      // Function to update a task
+      function updateTask(id, row) {
+        const name = row.querySelector(".taskName").value;
+        const description = row.querySelector(".taskDescription").value;
+        const dueDate = row.querySelector(".dueDate").value;
+        const status = row.querySelector(".taskStatus").checked;
+
+        fetch(`${protocol}/updateTask/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, description, dueDate, status }),
+        }).then(() => {
+          getTasks();
+        });
+      }
+
+      // Function to delete a task
+      function deleteTask(id) {
+        fetch(`${protocol}/deleteTask/${id}`, {
+          method: "DELETE",
+        }).then(() => {
+          getTasks();
+        });
+      }
+
+      // Function to add a new task row
+      addNewTaskButton.addEventListener("click", () => {
+        const name = newTaskNameInput.value;
+        const description = newTaskDescriptionInput.value;
+        const dueDate = newDueDateInput.value;
+        const status = newTaskStatusInput.checked;
+
+        fetch(`${protocol}/addTask`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, description, dueDate, status }),
+        }).then(() => {
+          getTasks();
+          newTaskNameInput.value = "";
+          newTaskDescriptionInput.value = "";
+          newDueDateInput.value = "";
+          newTaskStatusInput.checked = false;
+        });
       });
 
-      document.getElementById("search-button").addEventListener("click", () => {
-        const name = searchBar.value.trim();
-        if (name === "") {
-          fetchAndDisplayTodos();
-          return;
-        }
-        fetch(`${protocol}/searchTask/${name}`)
-          .then((response) => response.json())
-          .then((data) => {
-            const tasks = data.tasks;
-            todoTable.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Due Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tasks
-                          .map(
-                            (task) => `
-                            <tr>
-                                <td>${task.name}</td>
-                                <td>${task.description}</td>
-                                <td>${task.dueDate}</td>
-                                <td>
-                                    <button class="delete-todo" data-id="${task.name}">Delete</button>
-                                    <button class="edit-todo" data-id="${task.name}">Edit</button>
-                                </td>
-                            </tr>
-                        `
-                          )
-                          .join("")}
-                    </tbody>
-                `;
-          })
-          .catch((error) => console.log(error));
-      });
-
-      // Initial fetch and display of todos
-      fetchAndDisplayTodos();
+      // Initial fetch of tasks
+      getTasks();
     </script>
   </body>
 </html>
