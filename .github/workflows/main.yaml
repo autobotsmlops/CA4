@@ -35,7 +35,7 @@ jobs:
           make test
 
   docker:
-    needs: app-build
+    needs: app
     runs-on: [ubuntu-latest]
 
     steps:
