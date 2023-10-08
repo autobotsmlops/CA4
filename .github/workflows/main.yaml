@@ -1,43 +1,43 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: main branch workflow (on merge) 
+name: main branch workflow (on merge)
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch: # Allow manual triggering from GitHub UI
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     types:
       - closed
 permissions:
   contents: read
 jobs:
-  app-build:
+  app:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-    - name: Lint
-      run: |
-        make lint
-    - name: Test with pytest
-      run: |
-        make test
-      
-  docker-build:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Lint
+        run: |
+          make lint
+      - name: Test with pytest
+        run: |
+          make test
+
+  docker:
     needs: app-build
     runs-on: [ubuntu-latest]
-    
+
     steps:
       - uses: actions/checkout@v3
       - name: Docker Login
@@ -45,12 +45,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
-
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag autobotsmlops:latest
-
-      - name: Push Docker iamge
-        run: |
-          docker tag autobotsmlops:latest ${{ secrets.DOCKER_USERNAME }}/autobotsmlops:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/autobotsmlops:latest
-      
+      - name: Docker Compose
+        uses: isbang/compose-action@v1.5.1
